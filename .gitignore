@@ -1,3 +1,7 @@
 .vscode
 .idea
 .code
+
+*.o
+*.hi
+cse
