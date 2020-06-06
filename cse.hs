@@ -2,13 +2,10 @@ import System.Environment
 import System.IO
 import Data.Char
 
--- TODO: Create a 'class' for abilities.
--- TODO: Calculate scores.
-
 data Ninja = Ninja {name :: String, country :: Char,
                     status :: String, exam1 :: Float,
-                    exam2 :: Float, ability1 :: String,
-                    ability2 :: String, r :: Int} deriving (Show)
+                    exam2 :: Float, ability1 :: Float,
+                    ability2 :: Float, r :: Int, score :: Float} deriving (Show)
 
 -- For checking if the correct number of command line arguments are given.
 checkCommandLineArgs :: Int -> IO ()
@@ -25,9 +22,39 @@ parseCountry country
     | country == "Earth"     = 'E'
     | otherwise              = error "Invalid country."
 
+-- TODO: Create a 'class' or `dictionary` for abilities.
+-- For retrieving corresponding damage values of abilities.
+getDamage :: String -> Float
+getDamage ability
+    | ability == "Clone"     = 20
+    | ability == "Hit"       = 10
+    | ability == "Lightning" = 50
+    | ability == "Vision"    = 30
+    | ability == "Sand"      = 50
+    | ability == "Fire"      = 40
+    | ability == "Water"     = 30
+    | ability == "Blade"     = 20
+    | ability == "Summon"    = 50
+    | ability == "Storm"     = 10
+    | ability == "Rock"      = 20
+    | otherwise              = error "Invalid ability."
+
+-- For calculating the score of a ninja.
+getScore :: Float -> Float -> Float -> Float -> Float
+getScore exam1 exam2 ability1 ability2 = 0.5*exam1 + 0.3*exam2 + ability1 + ability2
+
 -- For reading the ninja information and returning a ninja.
 readNinja :: [String] -> Ninja
-readNinja [name, country, exam1, exam2, ability1, ability2] = Ninja name (parseCountry country) "junior" (read exam1 :: Float) (read exam2 :: Float) ability1 ability2 0
+readNinja [name, country, exam1, exam2, ability1, ability2] =
+    Ninja name c "junior" exam1Result exam2Result damage1 damage2 0 score
+        where
+            c           = parseCountry country
+            exam1Result = read exam1 :: Float
+            exam2Result = read exam2 :: Float
+            damage1     = getDamage ability1
+            damage2     = getDamage ability2
+            score       = getScore exam1Result exam2Result damage1 damage2
+
 
 -- For reading all the information about the ninjas and returning a list of ninjas.
 readNinjas :: [String] -> [Ninja]
