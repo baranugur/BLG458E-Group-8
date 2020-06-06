@@ -1,11 +1,36 @@
 import System.Environment
 import System.IO
 import Data.Char
+import Data.List
 
 data Ninja = Ninja {name :: String, country :: Char,
                     status :: String, exam1 :: Float,
                     exam2 :: Float, ability1 :: Float,
-                    ability2 :: Float, r :: Int, score :: Float} deriving (Show)
+                    ability2 :: Float, r :: Int, score :: Float}
+
+instance Show Ninja where show n = show $ showNinja n
+instance Eq Ninja where n1 == n2 = score n1 == score n2 && r n1 == r n2
+instance Ord Ninja
+    where
+        compare n1 n2 = if r1 == r2 then compare score1 score2 else flip compare r1 r2
+            where
+                score1 = score n1
+                score2 = score n2
+                r1     = r n1
+                r2     = r n2
+
+-- Ex: Sasuke, Score: 133, Status: Junior, Round: 0
+showNinja :: Ninja -> String
+showNinja (Ninja name country status exam1 exam2 ability1 ability2 r score) = name ++ ", Score: " ++ show score ++ ", Status: " ++ status ++ ", Round: " ++ show r
+
+sortNinjas :: [Ninja] -> [Ninja]
+sortNinjas ninjas = reverse $ sort ninjas
+
+showNinjas :: [Ninja] -> IO ()
+showNinjas []             = return ()
+showNinjas (ninja:ninjas) = do
+    putStrLn $ showNinja ninja
+    showNinjas ninjas
 
 -- For checking if the correct number of command line arguments are given.
 checkCommandLineArgs :: Int -> IO ()
@@ -46,7 +71,7 @@ getScore exam1 exam2 ability1 ability2 = 0.5*exam1 + 0.3*exam2 + ability1 + abil
 -- For reading the ninja information and returning a ninja.
 readNinja :: [String] -> Ninja
 readNinja [name, country, exam1, exam2, ability1, ability2] =
-    Ninja name c "junior" exam1Result exam2Result damage1 damage2 0 score
+    Ninja name c "Junior" exam1Result exam2Result damage1 damage2 0 score
         where
             c           = parseCountry country
             exam1Result = read exam1 :: Float
@@ -62,13 +87,13 @@ readNinjas []           = []
 readNinjas (stat:stats) = (readNinja $ words stat):(readNinjas stats)
 
 getNinjas :: [Ninja] -> Char -> [Ninja]
-getNinjas ninjas c = filter (\ninja -> (country ninja == c)) ninjas
+getNinjas ninjas c = filter (\ninja -> (country ninja == c)) (sortNinjas ninjas)
 
 getFire :: [Ninja] -> [Ninja]
 getFire ninjas = getNinjas ninjas 'F'
 
-getLigthning :: [Ninja] -> [Ninja]
-getLigthning ninjas = getNinjas ninjas 'L'
+getLightning :: [Ninja] -> [Ninja]
+getLightning ninjas = getNinjas ninjas 'L'
 
 getWater :: [Ninja] -> [Ninja]
 getWater ninjas = getNinjas ninjas 'W'
@@ -80,7 +105,7 @@ getEarth :: [Ninja] -> [Ninja]
 getEarth ninjas = getNinjas ninjas 'E'
 
 separate :: [Ninja] -> [[Ninja]]
-separate ninjas = [getFire ninjas, getLigthning ninjas, getWater ninjas, getWind ninjas, getEarth ninjas]
+separate ninjas = [getFire ninjas, getLightning ninjas, getWater ninjas, getWind ninjas, getEarth ninjas]
 
 main :: IO ()
 main = do
@@ -98,4 +123,4 @@ main = do
 
     -- Create nations.
     let [fire, lightning, water, wind, earth] = separate ninjas
-    print wind
+    showNinjas fire
