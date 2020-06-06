@@ -82,6 +82,36 @@ getEarth ninjas = getNinjas ninjas 'E'
 separate :: [Ninja] -> [[Ninja]]
 separate ninjas = [getFire ninjas, getLigthning ninjas, getWater ninjas, getWind ninjas, getEarth ninjas]
 
+
+printMenu :: IO ()
+printMenu = do
+    putStrLn "a) View a Count's Ninja Information"
+    putStrLn "b) View All Countries' Ninja Information"
+    putStrLn "c) Make a Round Between Ninjas"
+    putStrLn "d) Make a Round Between Countries"
+    putStrLn "e) Exit"
+
+playGame :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO ()
+playGame fire lightning water wind earth = do
+    printMenu
+    putStr "Enter the action: "
+    hFlush stdout
+    user_input <- getLine
+    if user_input == "a"
+        then playGame fire lightning water wind earth
+        else if user_input == "b"
+            then playGame fire lightning water wind earth
+            else if user_input == "c"
+                then playGame fire lightning water wind earth
+                else if user_input == "d"
+                    then playGame fire lightning water wind earth
+                    else if user_input == "e"
+                        then return ()
+                        else do
+                            putStrLn "Wrong input."
+                            playGame fire lightning water wind earth
+
+
 main :: IO ()
 main = do
     -- Get command line arguments.
@@ -98,4 +128,4 @@ main = do
 
     -- Create nations.
     let [fire, lightning, water, wind, earth] = separate ninjas
-    print wind
+    playGame fire lightning water wind earth
