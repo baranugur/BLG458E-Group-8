@@ -107,6 +107,53 @@ getEarth ninjas = getNinjas ninjas 'E'
 separate :: [Ninja] -> [[Ninja]]
 separate ninjas = [getFire ninjas, getLightning ninjas, getWater ninjas, getWind ninjas, getEarth ninjas]
 
+viewCountryInfo :: [[Ninja]] -> Char -> IO ()
+viewCountryInfo [fire, _, _, _, _]      'f' = showNinjas fire
+viewCountryInfo [_, lightning, _, _, _] 'l' = showNinjas lightning
+viewCountryInfo [_, _, water, _, _]     'w' = showNinjas water
+viewCountryInfo [_, _, _, wind, _]      'n' = showNinjas wind
+viewCountryInfo [_, _, _, _, earth]     'e' = showNinjas earth
+viewCountryInfo _ _                         = error "Invalid country info request."
+
+getCountryCode :: IO Char
+getCountryCode = do
+    putStr "Enter the country code: "
+    countryCode <- getLine
+    if length countryCode == 1 && elem (head countryCode) "FfLlWwNnEe"
+        then return $ head countryCode
+    else do
+        putStrLn "Please enter a valid country code (f, l, w, n, e)"
+        getCountryCode
+
+printMenu :: IO ()
+printMenu = do
+    putStrLn "a) View a Count's Ninja Information"
+    putStrLn "b) View All Countries' Ninja Information"
+    putStrLn "c) Make a Round Between Ninjas"
+    putStrLn "d) Make a Round Between Countries"
+    putStrLn "e) Exit"
+
+playGame :: [[Ninja]] -> IO ()
+playGame ninjas = do
+    hSetBuffering stdout NoBuffering
+    printMenu
+    putStr "Enter the action: "
+    userInput <- getLine
+
+    case userInput of
+        "a" -> do
+            countryCode <- getCountryCode
+            viewCountryInfo ninjas countryCode
+            playGame ninjas
+        "b" -> do
+            playGame ninjas
+        "c" -> do
+            playGame ninjas
+        "d" -> do
+            playGame ninjas
+        "e" -> do
+            return ()
+
 main :: IO ()
 main = do
     -- Get command line arguments.
@@ -123,4 +170,5 @@ main = do
 
     -- Create nations.
     let [fire, lightning, water, wind, earth] = separate ninjas
-    showNinjas fire
+
+    playGame [fire, lightning, water, wind, earth]
