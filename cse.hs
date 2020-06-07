@@ -169,6 +169,7 @@ playGame ninjas = do
             viewCountryInfo ninjas eligibilities countryCode
             playGame ninjas
         "b" -> do
+            showNinjas $ sortNinjas $ concat ninjas
             playGame ninjas
         "c" -> do
             playGame ninjas
