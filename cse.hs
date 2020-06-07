@@ -107,13 +107,33 @@ getEarth ninjas = getNinjas ninjas 'E'
 separate :: [Ninja] -> [[Ninja]]
 separate ninjas = [getFire ninjas, getLightning ninjas, getWater ninjas, getWind ninjas, getEarth ninjas]
 
-viewCountryInfo :: [[Ninja]] -> Char -> IO ()
-viewCountryInfo [fire, lightning, water, wind, earth] countryCode
-    | countryCode `elem` "Ff" = showNinjas fire
-    | countryCode `elem` "Ll" = showNinjas lightning
-    | countryCode `elem` "Ww" = showNinjas water
-    | countryCode `elem` "Nn" = showNinjas wind
-    | countryCode `elem` "Ee" = showNinjas earth
+checkEligibility :: [Ninja] -> Bool
+checkEligibility country = all (\ninja -> status ninja == "Junior") country
+
+checkEligibilitiesOfCountries :: [[Ninja]] -> [Bool]
+checkEligibilitiesOfCountries [fire, lightning, water, wind, earth] = [checkEligibility fire,
+                                                                     checkEligibility lightning,
+                                                                     checkEligibility water,
+                                                                     checkEligibility wind,
+                                                                     checkEligibility earth]
+
+viewCountryInfoVerbose :: [Ninja] -> Bool -> String -> IO ()
+viewCountryInfoVerbose country isCountryEligible countryName = do
+    showNinjas country
+    if not isCountryEligible
+        then putStrLn (countryName ++ " country cannot be included in a fight")
+    else
+        return ()
+
+viewCountryInfo :: [[Ninja]] -> [Bool] -> Char -> IO ()
+viewCountryInfo [fire, lightning, water, wind, earth]
+                [isFireEligibile, isLightningEligibile, isWaterEligibile, isWindEligibile, isEarthEligibile]
+                countryCode
+    | countryCode `elem` "Ff" = viewCountryInfoVerbose fire isFireEligibile "Fire"
+    | countryCode `elem` "Ll" = viewCountryInfoVerbose lightning isLightningEligibile "Lightning"
+    | countryCode `elem` "Ww" = viewCountryInfoVerbose water isWaterEligibile "Water"
+    | countryCode `elem` "Nn" = viewCountryInfoVerbose wind isWindEligibile "Wind"
+    | countryCode `elem` "Ee" = viewCountryInfoVerbose earth isEarthEligibile "Earth"
     | otherwise               = error "Invalid country info request."
 
 getCountryCode :: IO Char
@@ -136,6 +156,8 @@ printMenu = do
 
 playGame :: [[Ninja]] -> IO ()
 playGame ninjas = do
+    let eligibilities = checkEligibilitiesOfCountries ninjas
+
     hSetBuffering stdout NoBuffering
     printMenu
     putStr "Enter the action: "
@@ -144,7 +166,7 @@ playGame ninjas = do
     case userInput of
         "a" -> do
             countryCode <- getCountryCode
-            viewCountryInfo ninjas countryCode
+            viewCountryInfo ninjas eligibilities countryCode
             playGame ninjas
         "b" -> do
             playGame ninjas
