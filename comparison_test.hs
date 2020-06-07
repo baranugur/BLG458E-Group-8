@@ -147,8 +147,10 @@ main = do
     -- Create nations.
     let [fire, lightning, water, wind, earth] = separate ninjas
 
+    -- Print the whole nation to see scores manually
     print fire
     putStrLn ""
+    -- Print the max ninja of that nation (One that should be printed first)
     print (maxNinja fire)
     putStrLn ""
 
