@@ -83,24 +83,6 @@ separate :: [Ninja] -> [[Ninja]]
 separate ninjas = [getFire ninjas, getLigthning ninjas, getWater ninjas, getWind ninjas, getEarth ninjas]
 
 
-
-compareNinja :: Ninja -> Ninja -> Bool
-compareNinja ninja1 ninja2 = not ((r ninja1 > r ninja2) || ((r ninja1 == r ninja2) && (score ninja1 < score ninja2)))
-
-maxNinja' :: [Ninja] -> Ninja -> Ninja
-maxNinja' [] acc = acc
--- maxNinja' [x] acc = compareNinja x acc
-maxNinja' (x:xs) acc 
-    | compareNinja x acc == True = maxNinja' xs x
-    | compareNinja x acc == False = maxNinja' xs acc
-
-maxNinja :: [Ninja] -> Ninja
-maxNinja [] = error "Empty list for maxNinja"
-maxNinja [x] = x
-maxNinja (x:xs) = maxNinja' xs x
-
-
-
 printMenu :: IO ()
 printMenu = do
     putStrLn "a) View a Count's Ninja Information"
@@ -109,26 +91,24 @@ printMenu = do
     putStrLn "d) Make a Round Between Countries"
     putStrLn "e) Exit"
 
-playGame :: [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> [Ninja] -> IO ()
-playGame fire lightning water wind earth = do
+playGame :: [[Ninja]] -> IO ()
+playGame ninjas = do
     printMenu
     putStr "Enter the action: "
     hFlush stdout
     user_input <- getLine
-    if user_input == "a"
-        then playGame fire lightning water wind earth
-        else if user_input == "b"
-            then playGame fire lightning water wind earth
-            else if user_input == "c"
-                then playGame fire lightning water wind earth
-                else if user_input == "d"
-                    then playGame fire lightning water wind earth
-                    else if user_input == "e"
-                        then return ()
-                        else do
-                            putStrLn "Wrong input."
-                            playGame fire lightning water wind earth
 
+    case user_input of
+        "a" -> do
+            playGame ninjas
+        "b" -> do
+            playGame ninjas
+        "c" -> do
+            playGame ninjas
+        "d" -> do
+            playGame ninjas
+        "e" -> do
+            return ()
 
 main :: IO ()
 main = do
@@ -147,29 +127,5 @@ main = do
     -- Create nations.
     let [fire, lightning, water, wind, earth] = separate ninjas
 
-    print fire
-    putStrLn ""
-    print (maxNinja fire)
-    putStrLn ""
 
-    print lightning
-    putStrLn ""
-    print (maxNinja lightning)
-    putStrLn ""
-
-    print water
-    putStrLn ""
-    print (maxNinja water)
-    putStrLn ""
-
-    print wind
-    putStrLn ""
-    print (maxNinja wind)
-    putStrLn ""
-
-    print earth
-    putStrLn ""
-    print (maxNinja earth)
-    putStrLn ""
-
-    -- playGame fire lightning water wind earth
+    playGame [fire, lightning, water, wind, earth]
