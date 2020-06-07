@@ -1,11 +1,15 @@
 import System.Environment
 import System.IO
+import System.Random
 import Data.Char
+
+-- ######### We should add error check when file not found if not implemented already ###########
 
 data Ninja = Ninja {name :: String, country :: Char,
                     status :: String, exam1 :: Float,
                     exam2 :: Float, ability1 :: Float,
                     ability2 :: Float, r :: Int, score :: Float} deriving (Show)
+                   
 
 -- For checking if the correct number of command line arguments are given.
 checkCommandLineArgs :: Int -> IO ()
@@ -46,7 +50,7 @@ getScore exam1 exam2 ability1 ability2 = 0.5*exam1 + 0.3*exam2 + ability1 + abil
 -- For reading the ninja information and returning a ninja.
 readNinja :: [String] -> Ninja
 readNinja [name, country, exam1, exam2, ability1, ability2] =
-    Ninja name c "junior" exam1Result exam2Result damage1 damage2 0 score
+    Ninja name c "Junior" exam1Result exam2Result damage1 damage2 0 score
         where
             c           = parseCountry country
             exam1Result = read exam1 :: Float
@@ -85,18 +89,23 @@ separate ninjas = [getFire ninjas, getLigthning ninjas, getWater ninjas, getWind
 
 printMenu :: IO ()
 printMenu = do
+    hSetBuffering stdout NoBuffering
     putStrLn "a) View a Count's Ninja Information"
     putStrLn "b) View All Countries' Ninja Information"
     putStrLn "c) Make a Round Between Ninjas"
     putStrLn "d) Make a Round Between Countries"
     putStrLn "e) Exit"
+    
 
 playGame :: [[Ninja]] -> IO ()
 playGame ninjas = do
+    hSetBuffering stdout NoBuffering
     printMenu
     putStr "Enter the action: "
-    hFlush stdout
+    --hFlush stdout
     user_input <- getLine
+
+    randNumber <- randomRIO (1,2) :: IO Int
 
     case user_input of
         "a" -> do
@@ -106,10 +115,131 @@ playGame ninjas = do
         "c" -> do
             playGame ninjas
         "d" -> do
-            playGame ninjas
+            putStr "Enter the first country code: "
+            --hFlush stdout
+            fsCountry <- getChar
+            --hFlush stdout
+            getLine
+            putStr "Enter the second country code: "
+            --hFlush stdout
+            secCountry <- getChar
+            getLine
+            let (winner, newNinjas) = roundCountries (toUpper fsCountry) (toUpper secCountry) ninjas randNumber
+            printWinner winner
+            playGame newNinjas
+            --showNinja (firstCountryNinja 'W' tempCountries)
+            --showNinja (firstCountryNinja 'W' newCountries)
         "e" -> do
             return ()
+        _   -> do
+            putStrLn "Please enter a correct action"
+            playGame ninjas
 
+printWinner :: Ninja -> IO ()
+printWinner n = do
+    hSetBuffering stdout NoBuffering
+    putStr "Winner: "
+    showNinja n
+    
+showNinja :: Ninja -> IO()
+showNinja x = do
+    hSetBuffering stdout NoBuffering
+    putStr (name x)
+    putStr ", Score: "
+    putStr (show (score x))
+    putStr ", Status: "
+    putStr (status x)
+    putStr ", Round: "
+    putStr (show (r x))
+    putStrLn ""
+    --hFlush stdout
+
+roundCountries :: Char -> Char -> [[Ninja]] -> Int -> (Ninja, [[Ninja]])
+roundCountries a b countries randNumber = do
+    -- print randNumber
+    let n1 = firstCountryNinja a countries
+    let n2 = firstCountryNinja b countries
+    let winner = roundNinja n1 n2 randNumber
+    if winner==1
+        then if (status n1) == "Junior" && (r n1)==2
+            then
+                ((Ninja (name n1) (country n1) "JourneyMan" (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) 3 (score n1)), updateCountries (Just n1) (Just n2) countries)
+            else
+                ((Ninja (name n1) (country n1) "Junior" (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) ((r n1)+1) (score n1)), updateCountries (Just n1) (Just n2) countries)
+        else  if (status n2) == "Junior" && (r n2)==2
+            then
+                ((Ninja (name n2) (country n2) "JourneyMan" (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) 3 (score n2)), updateCountries (Just n2) (Just n1) countries)
+            else
+                ((Ninja (name n2) (country n2) "Junior" (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) ((r n2)+1) (score n2)), updateCountries (Just n2) (Just n1) countries)
+
+firstCountryNinja :: Char -> [[Ninja]] -> Ninja
+firstCountryNinja a countries
+    | a=='F' = ((countries !! 0) !! 0)
+    | a=='L' = ((countries !! 1) !! 0)
+    | a=='N' = ((countries !! 2) !! 0)
+    | a=='E' = ((countries !! 3) !! 0)
+    | a=='W' = ((countries !! 4) !! 0)
+    
+roundNinja :: Ninja -> Ninja -> Int -> Int
+roundNinja n1 n2 randNumber
+    |score1 > score2 || (score1==score2 && abilities1 > abilities2) = 1
+    |score1 < score2 || (score1==score2 && abilities1 < abilities2) = 2
+    |(score1==score2) && (abilities1 == abilities2) = randNumber
+
+        where
+            abilities1 = (ability1 n1) + (ability2 n1)
+            abilities2 = (ability1 n2) + (ability2 n2)
+            score1=score n1
+            score2=score n2
+            --(kot, result) = (randomRange 1 2)
+
+updateCountries :: Maybe Ninja -> Maybe Ninja -> [[Ninja]] -> [[Ninja]]
+updateCountries Nothing (Just nRmv) countries@(c:cs) = do
+    if (country (c!!0)) == (country nRmv)
+        then
+            (removeNinja nRmv c) : cs
+        else
+            c : updateCountries Nothing (Just nRmv) cs
+updateCountries (Just nUpd) Nothing countries@(c:cs) = do
+    if (country (c!!0)) == (country nUpd)
+            then
+                (updateNinja nUpd c) : cs
+            else
+                c : cs
+updateCountries (Just nUpd) (Just nRmv) countries@(c:cs) = do
+    if (country (c!!0)) == (country nUpd)
+        then
+            (updateNinja nUpd c) : (updateCountries Nothing (Just nRmv) cs)
+        else if (country (c!!0)) == (country nRmv)
+            then
+                (removeNinja nRmv c) : (updateCountries (Just nUpd) Nothing cs)
+            else
+                c : updateCountries (Just nUpd) (Just nRmv) cs
+        
+removeNinja :: Ninja -> [Ninja] -> [Ninja]
+removeNinja nRmv [] = error "Ninja to be removed not found!"
+removeNinja nRmv ninjas@(n:ns) = do
+    if (name nRmv) /= (name n) || (status nRmv) /= (status n) || (score nRmv) /= (score n) ||(exam1 nRmv) /= (exam1 n) || (exam2 nRmv) /= (exam2 n) || (ability1 nRmv) /= (ability1 n) || (ability2 nRmv) /= (ability2 n) || (r nRmv) /= (r n)
+        then
+            n : removeNinja nRmv ns
+        else
+            ns
+
+                                            
+updateNinja :: Ninja -> [Ninja] -> [Ninja]
+updateNinja nUpd ninjas@(n:ns) = do
+    if (name nUpd) /= (name n) || (status nUpd) /= (status n) || (score nUpd) /= (score n) ||(exam1 nUpd) /= (exam1 n) || (exam2 nUpd) /= (exam2 n) || (ability1 nUpd) /= (ability1 n) || (ability2 nUpd) /= (ability2 n) || (r nUpd) /= (r n)
+        then
+            n : updateNinja nUpd ns
+        else if (status nUpd) == "Junior" && (r nUpd)==2
+            then
+                let toAdd=Ninja (name nUpd) (country nUpd) "JourneyMan" (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) 3 (score nUpd)
+                in  toAdd : ns
+            else
+                let toAdd=Ninja (name nUpd) (country nUpd) "Junior" (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) ((r nUpd)+1) (score nUpd)
+                in toAdd : ns
+
+                                                    
 main :: IO ()
 main = do
     -- Get command line arguments.
