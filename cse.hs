@@ -2,14 +2,39 @@ import System.Environment
 import System.IO
 import System.Random
 import Data.Char
+import Data.List
 
 -- ######### We should add error check when file not found if not implemented already ###########
 
 data Ninja = Ninja {name :: String, country :: Char,
                     status :: String, exam1 :: Float,
                     exam2 :: Float, ability1 :: Float,
-                    ability2 :: Float, r :: Int, score :: Float} deriving (Show)
+                    ability2 :: Float, r :: Int, score :: Float}
+
+instance Show Ninja where show n = show $ showNinja n
+instance Eq Ninja where n1 == n2 = score n1 == score n2 && r n1 == r n2
+instance Ord Ninja
+    where
+        compare n1 n2 = if r1 == r2 then compare score1 score2 else flip compare r1 r2
+            where
+                score1 = score n1
+                score2 = score n2
+                r1     = r n1
+                r2     = r n2
                    
+
+-- Ex: Sasuke, Score: 133, Status: Junior, Round: 0
+showNinja :: Ninja -> String
+showNinja (Ninja name country status exam1 exam2 ability1 ability2 r score) = name ++ ", Score: " ++ show score ++ ", Status: " ++ status ++ ", Round: " ++ show r
+
+sortNinjas :: [Ninja] -> [Ninja]
+sortNinjas ninjas = reverse $ sort ninjas
+
+showNinjas :: [Ninja] -> IO ()
+showNinjas []             = return ()
+showNinjas (ninja:ninjas) = do
+    putStrLn $ showNinja ninja
+    showNinjas ninjas
 
 -- For checking if the correct number of command line arguments are given.
 checkCommandLineArgs :: Int -> IO ()
@@ -86,6 +111,45 @@ getEarth ninjas = getNinjas ninjas 'E'
 separate :: [Ninja] -> [[Ninja]]
 separate ninjas = [getFire ninjas, getLigthning ninjas, getWater ninjas, getWind ninjas, getEarth ninjas]
 
+checkEligibility :: [Ninja] -> Bool
+checkEligibility country = all (\ninja -> status ninja == "Junior") country
+
+checkEligibilitiesOfCountries :: [[Ninja]] -> [Bool]
+checkEligibilitiesOfCountries [fire, lightning, water, wind, earth] = [checkEligibility fire,
+                                                                     checkEligibility lightning,
+                                                                     checkEligibility water,
+                                                                     checkEligibility wind,
+                                                                     checkEligibility earth]
+
+viewCountryInfoVerbose :: [Ninja] -> Bool -> String -> IO ()
+viewCountryInfoVerbose country isCountryEligible countryName = do
+    showNinjas country
+    if not isCountryEligible
+        then putStrLn (countryName ++ " country cannot be included in a fight")
+    else
+        return ()
+
+viewCountryInfo :: [[Ninja]] -> [Bool] -> Char -> IO ()
+viewCountryInfo [fire, lightning, water, wind, earth]
+                [isFireEligibile, isLightningEligibile, isWaterEligibile, isWindEligibile, isEarthEligibile]
+                countryCode
+    | countryCode `elem` "Ff" = viewCountryInfoVerbose fire isFireEligibile "Fire"
+    | countryCode `elem` "Ll" = viewCountryInfoVerbose lightning isLightningEligibile "Lightning"
+    | countryCode `elem` "Ww" = viewCountryInfoVerbose water isWaterEligibile "Water"
+    | countryCode `elem` "Nn" = viewCountryInfoVerbose wind isWindEligibile "Wind"
+    | countryCode `elem` "Ee" = viewCountryInfoVerbose earth isEarthEligibile "Earth"
+    | otherwise               = error "Invalid country info request."
+
+getCountryCode :: IO Char
+getCountryCode = do
+    putStr "Enter the country code: "
+    countryCode <- getLine
+    if length countryCode == 1 && elem (head countryCode) "FfLlWwNnEe"
+        then return $ head countryCode
+    else do
+        putStrLn "Please enter a valid country code (f, l, w, n, e)"
+        getCountryCode
+
 
 printMenu :: IO ()
 printMenu = do
@@ -99,6 +163,8 @@ printMenu = do
 
 playGame :: [[Ninja]] -> IO ()
 playGame ninjas = do
+    let eligibilities = checkEligibilitiesOfCountries ninjas
+
     hSetBuffering stdout NoBuffering
     printMenu
     putStr "Enter the action: "
@@ -109,8 +175,11 @@ playGame ninjas = do
 
     case user_input of
         "a" -> do
+            countryCode <- getCountryCode
+            viewCountryInfo ninjas eligibilities countryCode
             playGame ninjas
         "b" -> do
+            showNinjas $ sortNinjas $ concat ninjas
             playGame ninjas
         "c" -> do
             playGame ninjas
@@ -139,20 +208,7 @@ printWinner :: Ninja -> IO ()
 printWinner n = do
     hSetBuffering stdout NoBuffering
     putStr "Winner: "
-    showNinja n
-    
-showNinja :: Ninja -> IO()
-showNinja x = do
-    hSetBuffering stdout NoBuffering
-    putStr (name x)
-    putStr ", Score: "
-    putStr (show (score x))
-    putStr ", Status: "
-    putStr (status x)
-    putStr ", Round: "
-    putStr (show (r x))
-    putStrLn ""
-    --hFlush stdout
+    print (showNinja n)
 
 roundCountries :: Char -> Char -> [[Ninja]] -> Int -> (Ninja, [[Ninja]])
 roundCountries a b countries randNumber = do
