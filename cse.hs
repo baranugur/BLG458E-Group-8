@@ -2,6 +2,7 @@ import Prelude
 import System.IO
 import Data.Char
 import System.Random
+import System.Environment
 
 data Ninja = Ninja {name:: String, country:: Char,
                     status:: String, score:: Float,
@@ -39,7 +40,7 @@ exit = do
 fire :: [Ninja]
 fire = [] ++ [Ninja "Sasuke" 'F' "Junior" 0 50 60 "Lightning" "Fire" 0]
 		++ [Ninja "Neiji" 'F' "Junior" 0 40 75 "Vision" "Hit" 0]
-		++ [Ninja "Naruto" 'F' "JuniorMan" 0 40 45 "Clone" "Summon" 3]
+		++ [Ninja "Naruto" 'F' "JorneyMan" 0 40 45 "Clone" "Summon" 3]
 
 lightning :: [Ninja]
 lightning = [] ++ [Ninja"Sana" 'L' "Junior" 0 55 65 "Lightning" "Hit" 0] 
@@ -70,17 +71,73 @@ firstCountryNinja a countries
 	| a=='W' = ((countries !! 4) !! 0)
 	
 		
-roundCountries :: Char -> Char -> [[Ninja]] -> IO ()
+roundCountries :: Char -> Char -> [[Ninja]] -> (Ninja, [[Ninja]])
 roundCountries a b countries = do
 							let n1 = firstCountryNinja a countries
 							let n2 = firstCountryNinja b countries
 							let winner = roundNinja n1 n2
-							putStr "Winner: "
 							if winner==1
-								then
-									showNinja n1
-								else
-									showNinja n2
+								then if (status n1) == "Junior" && (r n1)==2
+									then
+										((Ninja (name n1) (country n1) "JorneyMan" (score n1) (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) 3), updateCountries (Just n1) (Just n2) countries)
+									else
+										(Ninja (name n1) (country n1) "Junior" (score n1) (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) ((r n1)+1), updateCountries (Just n1) (Just n2) countries)
+								else  if (status n2) == "Junior" && (r n2)==2
+									then
+										((Ninja (name n2) (country n2) "JorneyMan" (score n2) (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) 3), updateCountries (Just n2) (Just n1) countries)
+									else
+										(Ninja (name n2) (country n2) "Junior" (score n2) (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) ((r n2)+1), updateCountries (Just n2) (Just n1) countries)
+									
+									
+updateCountries :: Maybe Ninja -> Maybe Ninja -> [[Ninja]] -> [[Ninja]]
+updateCountries Nothing (Just nRmv) countries@(c:cs) = do
+											if (country (c!!0)) == (country nRmv)
+												then
+													(removeNinja nRmv c) : cs
+												else
+													c : updateCountries Nothing (Just nRmv) cs
+updateCountries (Just nUpd) Nothing countries@(c:cs) = do
+											if (country (c!!0)) == (country nUpd)
+													then
+														(updateNinja nUpd c) : cs
+													else
+														c : cs
+updateCountries (Just nUpd) (Just nRmv) countries@(c:cs) = do
+												if (country (c!!0)) == (country nUpd)
+													then
+														(updateNinja nUpd c) : (updateCountries Nothing (Just nRmv) cs)
+													else if (country (c!!0)) == (country nRmv)
+														then
+															(removeNinja nRmv c) : (updateCountries (Just nUpd) Nothing cs)
+														else
+															c : updateCountries (Just nUpd) (Just nRmv) cs
+															
+removeNinja :: Ninja -> [Ninja] -> [Ninja]
+removeNinja nRmv [] = error "Ninja to be removed not found!"
+removeNinja nRmv ninjas@(n:ns) = do
+									if (name nRmv) /= (name n) || (status nRmv) /= (status n) || (score nRmv) /= (score n) ||(exam1 nRmv) /= (exam1 n) || (exam2 nRmv) /= (exam2 n) || (ability1 nRmv) /= (ability1 n) || (ability2 nRmv) /= (ability2 n) || (r nRmv) /= (r n)
+										then
+											n : removeNinja nRmv ns
+										else
+											ns
+											
+updateNinja :: Ninja -> [Ninja] -> [Ninja]
+updateNinja nUpd ninjas@(n:ns) = do
+									if (name nUpd) /= (name n) || (status nUpd) /= (status n) || (score nUpd) /= (score n) ||(exam1 nUpd) /= (exam1 n) || (exam2 nUpd) /= (exam2 n) || (ability1 nUpd) /= (ability1 n) || (ability2 nUpd) /= (ability2 n) || (r nUpd) /= (r n)
+										then
+											n : updateNinja nUpd ns
+										else if (status nUpd) == "Junior" && (r nUpd)==2
+											then
+												let toAdd=Ninja (name nUpd) (country nUpd) "JorneyMan" (score nUpd) (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) 3
+												in	toAdd : ns
+											else
+												let toAdd=Ninja (name nUpd) (country nUpd) "Junior" (score nUpd) (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) ((r nUpd)+1)
+												in toAdd : ns
+
+printWinner :: Ninja -> IO ()
+printWinner n = do
+					putStr "Winner: "
+					showNinja n
 								
 
 roundNinja :: Ninja -> Ninja -> Int
@@ -121,8 +178,11 @@ main = do
 	hFlush stdout
 	secCountry <- getChar
 	let tempCountries = [fire, lightning, wind, earth, water]
-	roundCountries (toUpper fsCountry) (toUpper secCountry) tempCountries
-	-- 	The round countries will return the updated array to another variable
-	--	which will get return from the whole d) operation again to the recurseive initial menu function
+	let (winner, newCountries) = roundCountries (toUpper fsCountry) (toUpper secCountry) tempCountries
+	printWinner winner
+	showNinja (firstCountryNinja 'W' tempCountries)
+	showNinja (firstCountryNinja 'W' newCountries)
+	-- 	The last two functions will print the loser country first ninja (before and after) for country Water.
+	--	Change 'W' for other input of loser
 	
 	
