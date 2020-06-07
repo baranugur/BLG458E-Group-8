@@ -108,12 +108,13 @@ separate :: [Ninja] -> [[Ninja]]
 separate ninjas = [getFire ninjas, getLightning ninjas, getWater ninjas, getWind ninjas, getEarth ninjas]
 
 viewCountryInfo :: [[Ninja]] -> Char -> IO ()
-viewCountryInfo [fire, _, _, _, _]      'f' = showNinjas fire
-viewCountryInfo [_, lightning, _, _, _] 'l' = showNinjas lightning
-viewCountryInfo [_, _, water, _, _]     'w' = showNinjas water
-viewCountryInfo [_, _, _, wind, _]      'n' = showNinjas wind
-viewCountryInfo [_, _, _, _, earth]     'e' = showNinjas earth
-viewCountryInfo _ _                         = error "Invalid country info request."
+viewCountryInfo [fire, lightning, water, wind, earth] countryCode
+    | countryCode `elem` "Ff" = showNinjas fire
+    | countryCode `elem` "Ll" = showNinjas lightning
+    | countryCode `elem` "Ww" = showNinjas water
+    | countryCode `elem` "Nn" = showNinjas wind
+    | countryCode `elem` "Ee" = showNinjas earth
+    | otherwise               = error "Invalid country info request."
 
 getCountryCode :: IO Char
 getCountryCode = do
