@@ -4,8 +4,6 @@ import System.Random
 import Data.Char
 import Data.List
 
--- ######### We should add error check when file not found if not implemented already ###########
-
 data Ninja = Ninja {name :: String, country :: Char,
                     status :: String, exam1 :: Float,
                     exam2 :: Float, ability1 :: Float,
@@ -153,6 +151,7 @@ getCountryCode = do
 printMenu :: IO ()
 printMenu = do
     hSetBuffering stdout NoBuffering
+    putStrLn ""
     putStrLn "a) View a Count's Ninja Information"
     putStrLn "b) View All Countries' Ninja Information"
     putStrLn "c) Make a Round Between Ninjas"
@@ -180,21 +179,21 @@ playGame ninjas = do
             showNinjas $ sortNinjas $ concat ninjas
             playGame ninjas
         "c" -> do
-			putStr "Enter the name of the first ninja: "
-			fsNinja <- getLine
-			putStr "Enter the country code of the first ninja: "
-			fsCountry <- getChar
-			getLine
-			let n1 = selNinja fsNinja (toUpper fsCountry) ninjas
-			putStr "Enter the name of the second ninja: "
-			secNinja <- getLine
-			putStr "Enter the country code of the second ninja: "
-			secCountry <- getChar
-			getLine
-			let n2 = selNinja secNinja (toUpper secCountry) ninjas
-			let (winner, newNinjas) = roundNinja n1 n2 ninjas
-			printWinner winner
-			playGame newNinjas
+            putStr "Enter the name of the first ninja: "
+            fsNinja <- getLine
+            putStr "Enter the country code of the first ninja: "
+            fsCountry <- getChar
+            getLine
+            let n1 = selNinja fsNinja (toUpper fsCountry) ninjas
+            putStr "Enter the name of the second ninja: "
+            secNinja <- getLine
+            putStr "Enter the country code of the second ninja: "
+            secCountry <- getChar
+            getLine
+            let n2 = selNinja secNinja (toUpper secCountry) ninjas
+            let (winner, newNinjas) = roundNinja n1 n2 ninjas randNumber
+            printWinner winner
+            playGame newNinjas
         "d" -> do
             putStr "Enter the first country code: "
             fsCountry <- getChar
@@ -217,127 +216,127 @@ printWinner n = do
     putStr "Winner: "
     print (showNinja n)
 
-roundNinja :: Ninja -> Ninja -> [[Ninja]] -> (Ninja, [[Ninja]])
-roundNinja n1 n2 countries = do
-	let winner = duel n1 n2
-	if winner==1
-		then if (status n1) == "Junior" && (r n1)==2
-			then
-				((Ninja (name n1) (country n1) "JourneyMan" (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) 3 ((score n1)+10)), updateCountries (Just n1) (Just n2) countries)
-			else
-				((Ninja (name n1) (country n1) "Junior" (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) ((r n1)+1) ((score n1)+10)), updateCountries (Just n1) (Just n2) countries)
-		else  if (status n2) == "Junior" && (r n2)==2
-			then
-				((Ninja (name n2) (country n2) "JourneyMan" (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) 3 ((score n2)+10)), updateCountries (Just n2) (Just n1) countries)
-			else
-				((Ninja (name n2) (country n2) "Junior" (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) ((r n2)+1) ((score n2)+10)), updateCountries (Just n2) (Just n1) countries)
+roundNinja :: Ninja -> Ninja -> [[Ninja]] -> Int -> (Ninja, [[Ninja]])
+roundNinja n1 n2 countries randNumber = do
+    let winner = duel n1 n2 randNumber
+    if winner==1
+        then if (status n1) == "Junior" && (r n1)==2
+            then
+                ((Ninja (name n1) (country n1) "Journeyman" (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) 3 ((score n1)+10)), updateCountries (Just n1) (Just n2) countries)
+            else
+                ((Ninja (name n1) (country n1) "Junior" (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) ((r n1)+1) ((score n1)+10)), updateCountries (Just n1) (Just n2) countries)
+        else  if (status n2) == "Junior" && (r n2)==2
+            then
+                ((Ninja (name n2) (country n2) "Journeyman" (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) 3 ((score n2)+10)), updateCountries (Just n2) (Just n1) countries)
+            else
+                ((Ninja (name n2) (country n2) "Junior" (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) ((r n2)+1) ((score n2)+10)), updateCountries (Just n2) (Just n1) countries)
 
-roundCountries :: Char -> Char -> [[Ninja]] -> (Ninja, [[Ninja]])
-roundCountries a b countries = do
-	let n1 = firstCountryNinja a countries
-	let n2 = firstCountryNinja b countries
-	roundNinja n1 n2 countries
+roundCountries :: Char -> Char -> [[Ninja]] -> Int -> (Ninja, [[Ninja]])
+roundCountries a b countries randNumber = do
+    let n1 = firstCountryNinja a countries
+    let n2 = firstCountryNinja b countries
+    roundNinja n1 n2 countries randNumber
 
 firstCountryNinja :: Char -> [[Ninja]] -> Ninja
 firstCountryNinja a countries
-	| a=='F' = ((countries !! 0) !! 0)
-	| a=='L' = ((countries !! 1) !! 0)
-	| a=='W' = ((countries !! 2) !! 0)
-	| a=='N' = ((countries !! 3) !! 0)
-	| a=='E' = ((countries !! 4) !! 0)
+    | a=='F' = ((countries !! 0) !! 0)
+    | a=='L' = ((countries !! 1) !! 0)
+    | a=='W' = ((countries !! 2) !! 0)
+    | a=='N' = ((countries !! 3) !! 0)
+    | a=='E' = ((countries !! 4) !! 0)
 
-duel :: Ninja -> Ninja -> Int
-duel n1 n2
-	|score1 > score2 || (score1==score2 && abilities1 > abilities2) = 1
-	|score1 < score2 || (score1==score2 && abilities1 < abilities2) = 2
-	--Random function needs to be inserted as a guard here
-		where
-			abilities1 = (ability1 n1) + (ability2 n1)
-			abilities2 = (ability1 n2) + (ability2 n2)
-			score1=score n1
-			score2=score n2
-			--(kot, result) = (randomRange 1 2)
+duel :: Ninja -> Ninja -> Int -> Int
+duel n1 n2 randNumber
+    |score1 > score2 || (score1==score2 && abilities1 > abilities2) = 1
+    |score1 < score2 || (score1==score2 && abilities1 < abilities2) = 2
+    |(score1==score2) && (abilities1 == abilities2) = randNumber
+        where
+            abilities1 = (ability1 n1) + (ability2 n1)
+            abilities2 = (ability1 n2) + (ability2 n2)
+            score1=score n1
+            score2=score n2
+            --(kot, result) = (randomRange 1 2)
 
 updateCountries :: Maybe Ninja -> Maybe Ninja -> [[Ninja]] -> [[Ninja]]
 updateCountries Nothing (Just nRmv) countries@(c:cs) = do
-	if (country (c!!0)) == (country nRmv)
-		then
-			(removeNinja nRmv c) : cs
-		else
-			c : updateCountries Nothing (Just nRmv) cs
+    if (country (c!!0)) == (country nRmv)
+        then
+            (removeNinja nRmv c) : cs
+        else
+            c : updateCountries Nothing (Just nRmv) cs
 updateCountries (Just nUpd) Nothing countries@(c:cs) = do
-	if (country (c!!0)) == (country nUpd)
-			then
-				(updateNinja nUpd c) : cs
-			else
-				c : updateCountries (Just nUpd) Nothing cs
+    if (country (c!!0)) == (country nUpd)
+            then
+                (updateNinja nUpd c) : cs
+            else
+                c : updateCountries (Just nUpd) Nothing cs
 updateCountries (Just nUpd) (Just nRmv) countries@(c:cs) = do
-	if (country nUpd) == (country nRmv)
-		then if (country nUpd) == (country (c!!0))
-			then (updateNRemove nUpd nRmv c) : cs
-			else c : (updateCountries (Just nUpd) (Just nRmv) cs)
-		else if (country (c!!0)) == (country nUpd)
-			then
-				(updateNinja nUpd c) : (updateCountries Nothing (Just nRmv) cs)
-			else if (country (c!!0)) == (country nRmv)
-				then
-					(removeNinja nRmv c) : (updateCountries (Just nUpd) Nothing cs)
-				else
-					c : updateCountries (Just nUpd) (Just nRmv) cs
+    if (country nUpd) == (country nRmv)
+        then if (country nUpd) == (country (c!!0))
+            then (updateNRemove nUpd nRmv c) : cs
+            else c : (updateCountries (Just nUpd) (Just nRmv) cs)
+        else if (country (c!!0)) == (country nUpd)
+            then
+                (updateNinja nUpd c) : (updateCountries Nothing (Just nRmv) cs)
+            else if (country (c!!0)) == (country nRmv)
+                then
+                    (removeNinja nRmv c) : (updateCountries (Just nUpd) Nothing cs)
+                else
+                    c : updateCountries (Just nUpd) (Just nRmv) cs
 
 removeNinja :: Ninja -> [Ninja] -> [Ninja]
 removeNinja nRmv [] = error "Ninja to be removed not found!"
 removeNinja nRmv ninjas@(n:ns) = do
-	if (name nRmv) /= (name n) || (status nRmv) /= (status n) || (score nRmv) /= (score n) ||(exam1 nRmv) /= (exam1 n) || (exam2 nRmv) /= (exam2 n) || (ability1 nRmv) /= (ability1 n) || (ability2 nRmv) /= (ability2 n) || (r nRmv) /= (r n)
-		then
-			n : removeNinja nRmv ns
-		else
-			ns
+    if (name nRmv) /= (name n) || (status nRmv) /= (status n) || (score nRmv) /= (score n) ||(exam1 nRmv) /= (exam1 n) || (exam2 nRmv) /= (exam2 n) || (ability1 nRmv) /= (ability1 n) || (ability2 nRmv) /= (ability2 n) || (r nRmv) /= (r n)
+        then
+            n : removeNinja nRmv ns
+        else
+            ns
 
 
 updateNinja :: Ninja -> [Ninja] -> [Ninja]
 updateNinja nUpd ninjas@(n:ns) = do
-	if (name nUpd) /= (name n) || (status nUpd) /= (status n) || (score nUpd) /= (score n) ||(exam1 nUpd) /= (exam1 n) || (exam2 nUpd) /= (exam2 n) || (ability1 nUpd) /= (ability1 n) || (ability2 nUpd) /= (ability2 n) || (r nUpd) /= (r n)
-		then
-			n : updateNinja nUpd ns
-		else if (status nUpd) == "Junior" && (r nUpd)==2
-			then
-				let toAdd=Ninja (name nUpd) (country nUpd) "JourneyMan" (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) 3 ((score nUpd)+10)
-				in	toAdd : ns
-			else
-				let toAdd=Ninja (name nUpd) (country nUpd) (status nUpd) (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) ((r nUpd)+1) ((score nUpd)+10)
-				in toAdd : ns
+    if (name nUpd) /= (name n) || (status nUpd) /= (status n) || (score nUpd) /= (score n) ||(exam1 nUpd) /= (exam1 n) || (exam2 nUpd) /= (exam2 n) || (ability1 nUpd) /= (ability1 n) || (ability2 nUpd) /= (ability2 n) || (r nUpd) /= (r n)
+        then
+            n : updateNinja nUpd ns
+        else if (status nUpd) == "Junior" && (r nUpd)==2
+            then
+                let toAdd=Ninja (name nUpd) (country nUpd) "Journeyman" (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) 3 ((score nUpd)+10)
+                in    toAdd : ns
+            else
+                let toAdd=Ninja (name nUpd) (country nUpd) (status nUpd) (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) ((r nUpd)+1) ((score nUpd)+10)
+                in toAdd : ns
 
 updateNRemove :: Ninja -> Ninja -> [Ninja] -> [Ninja]
 updateNRemove nUpd nRmv ninjas@(n:ns) = do
-	if (name nUpd) /= (name n) || (status nUpd) /= (status n) || (score nUpd) /= (score n) ||(exam1 nUpd) /= (exam1 n) || (exam2 nUpd) /= (exam2 n) || (ability1 nUpd) /= (ability1 n) || (ability2 nUpd) /= (ability2 n) || (r nUpd) /= (r n)
-		then if (name nRmv) /= (name n) || (status nRmv) /= (status n) || (score nRmv) /= (score n) ||(exam1 nRmv) /= (exam1 n) || (exam2 nRmv) /= (exam2 n) || (ability1 nRmv) /= (ability1 n) || (ability2 nRmv) /= (ability2 n) || (r nRmv) /= (r n)
-				then
-					n : updateNRemove nUpd nRmv ns
-				else
-					updateNinja nUpd ns
-		else if (status nUpd) == "Junior" && (r nUpd)==2
-			then
-				let toAdd=Ninja (name nUpd) (country nUpd) "JourneyMan" (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) 3 ((score nUpd)+10)
-				in	toAdd : removeNinja nRmv ns
-			else
-				let toAdd=Ninja (name nUpd) (country nUpd) (status nUpd) (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) ((r nUpd)+1) ((score nUpd)+10)
-				in toAdd : removeNinja nRmv ns
+    if (name nUpd) /= (name n) || (status nUpd) /= (status n) || (score nUpd) /= (score n) ||(exam1 nUpd) /= (exam1 n) || (exam2 nUpd) /= (exam2 n) || (ability1 nUpd) /= (ability1 n) || (ability2 nUpd) /= (ability2 n) || (r nUpd) /= (r n)
+        then if (name nRmv) /= (name n) || (status nRmv) /= (status n) || (score nRmv) /= (score n) ||(exam1 nRmv) /= (exam1 n) || (exam2 nRmv) /= (exam2 n) || (ability1 nRmv) /= (ability1 n) || (ability2 nRmv) /= (ability2 n) || (r nRmv) /= (r n)
+                then
+                    n : updateNRemove nUpd nRmv ns
+                else
+                    updateNinja nUpd ns
+        else if (status nUpd) == "Junior" && (r nUpd)==2
+            then
+                let toAdd=Ninja (name nUpd) (country nUpd) "Journeyman" (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) 3 ((score nUpd)+10)
+                in    toAdd : removeNinja nRmv ns
+            else
+                let toAdd=Ninja (name nUpd) (country nUpd) (status nUpd) (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) ((r nUpd)+1) ((score nUpd)+10)
+                in toAdd : removeNinja nRmv ns
 
 selNinja :: String -> Char -> [[Ninja]] -> Ninja
 selNinja a ccode countries
-	| ccode=='F' = findNinja a (countries !! 0)
-	| ccode=='L' = findNinja a (countries !! 1)
-	| ccode=='W' = findNinja a (countries !! 2)
-	| ccode=='N' = findNinja a (countries !! 3)
-	| ccode=='E' = findNinja a (countries !! 4)
+    | ccode=='F' = findNinja a (countries !! 0)
+    | ccode=='L' = findNinja a (countries !! 1)
+    | ccode=='W' = findNinja a (countries !! 2)
+    | ccode=='N' = findNinja a (countries !! 3)
+    | ccode=='E' = findNinja a (countries !! 4)
 
 findNinja :: String -> [Ninja] -> Ninja
 findNinja a [] = error "Ninja could not be found"
 findNinja a ninjas@(n:ns)= do
-	if((name n) == a)
-		then n
-		else findNinja a ns
+    if((name n) == a)
+        then n
+        else findNinja a ns
 
 main :: IO ()
 main = do
