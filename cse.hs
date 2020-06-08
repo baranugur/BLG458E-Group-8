@@ -166,14 +166,14 @@ roundNinja n1 n2 countries = do
 	if winner==1
 		then if (status n1) == "Junior" && (r n1)==2
 			then
-				((Ninja (name n1) (country n1) "JourneyMan" (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) 3 (score n1)), updateCountries (Just n1) (Just n2) countries)
+				((Ninja (name n1) (country n1) "JourneyMan" (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) 3 ((score n1)+10)), updateCountries (Just n1) (Just n2) countries)
 			else
-				((Ninja (name n1) (country n1) "Junior" (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) ((r n1)+1) (score n1)), updateCountries (Just n1) (Just n2) countries)
+				((Ninja (name n1) (country n1) "Junior" (exam1 n1) (exam2 n1) (ability1 n1) (ability2 n1) ((r n1)+1) ((score n1)+10)), updateCountries (Just n1) (Just n2) countries)
 		else  if (status n2) == "Junior" && (r n2)==2
 			then
-				((Ninja (name n2) (country n2) "JourneyMan" (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) 3 (score n2)), updateCountries (Just n2) (Just n1) countries)
+				((Ninja (name n2) (country n2) "JourneyMan" (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) 3 ((score n2)+10)), updateCountries (Just n2) (Just n1) countries)
 			else
-				((Ninja (name n2) (country n2) "Junior" (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) ((r n2)+1) (score n2)), updateCountries (Just n2) (Just n1) countries)
+				((Ninja (name n2) (country n2) "Junior" (exam1 n2) (exam2 n2) (ability1 n2) (ability2 n2) ((r n2)+1) ((score n2)+10)), updateCountries (Just n2) (Just n1) countries)
 
 roundCountries :: Char -> Char -> [[Ninja]] -> (Ninja, [[Ninja]])
 roundCountries a b countries = do
@@ -245,10 +245,10 @@ updateNinja nUpd ninjas@(n:ns) = do
 			n : updateNinja nUpd ns
 		else if (status nUpd) == "Junior" && (r nUpd)==2
 			then
-				let toAdd=Ninja (name nUpd) (country nUpd) "JourneyMan" (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) 3 (score nUpd)
+				let toAdd=Ninja (name nUpd) (country nUpd) "JourneyMan" (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) 3 ((score nUpd)+10)
 				in	toAdd : ns
 			else
-				let toAdd=Ninja (name nUpd) (country nUpd) (status nUpd) (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) ((r nUpd)+1) (score nUpd)
+				let toAdd=Ninja (name nUpd) (country nUpd) (status nUpd) (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) ((r nUpd)+1) ((score nUpd)+10)
 				in toAdd : ns
 
 updateNRemove :: Ninja -> Ninja -> [Ninja] -> [Ninja]
@@ -261,10 +261,10 @@ updateNRemove nUpd nRmv ninjas@(n:ns) = do
 					updateNinja nUpd ns
 		else if (status nUpd) == "Junior" && (r nUpd)==2
 			then
-				let toAdd=Ninja (name nUpd) (country nUpd) "JourneyMan" (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) 3 (score nUpd)
+				let toAdd=Ninja (name nUpd) (country nUpd) "JourneyMan" (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) 3 ((score nUpd)+10)
 				in	toAdd : removeNinja nRmv ns
 			else
-				let toAdd=Ninja (name nUpd) (country nUpd) (status nUpd) (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) ((r nUpd)+1) (score nUpd)
+				let toAdd=Ninja (name nUpd) (country nUpd) (status nUpd) (exam1 nUpd) (exam2 nUpd) (ability1 nUpd) (ability2 nUpd) ((r nUpd)+1) ((score nUpd)+10)
 				in toAdd : removeNinja nRmv ns
 								
 selNinja :: String -> Char -> [[Ninja]] -> Ninja
