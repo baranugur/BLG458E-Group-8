@@ -235,9 +235,15 @@ playGame ninjas = do
                             putStrLn "The entered country is empty, please try again !"
                             playGame ninjas
                         _ -> do
-                            let (winner, newNinjas) = roundCountries (toUpper fsCountry) (toUpper secCountry) ninjas randNumber
-                            printWinner winner
-                            playGame newNinjas
+
+                            if ( (toUpper fsCountry) == (toUpper secCountry) )
+                                then do
+                                    putStrLn "Please enter different countries !"
+                                    playGame ninjas
+                                else do
+                                    let (winner, newNinjas) = roundCountries (toUpper fsCountry) (toUpper secCountry) ninjas randNumber
+                                    printWinner winner
+                                    playGame newNinjas
                             
 
         "e" -> do
