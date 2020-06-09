@@ -8,7 +8,7 @@ data Ninja = Ninja {name :: String, country :: Char,
                     exam2 :: Float, ability1 :: Float,
                     ability2 :: Float, r :: Int, score :: Float}
 
-instance Show Ninja where show n = show $ showNinja n
+instance Show Ninja where show = show . showNinja
 instance Eq Ninja where n1 == n2 = score n1 == score n2 && r n1 == r n2
 instance Ord Ninja
     where
