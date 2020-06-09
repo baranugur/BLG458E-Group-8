@@ -172,7 +172,7 @@ printMenu = do
 
 playGame :: [[Ninja]] -> IO ()
 playGame ninjas = do
-    let eligibilities = checkEligibilitiesOfCountries ninjas
+    
 
     hSetBuffering stdout NoBuffering
     printMenu
@@ -183,12 +183,14 @@ playGame ninjas = do
 
     case userInput of
         "a" -> do
+            let eligibilities = checkEligibilitiesOfCountries ninjas
             countryCode <- getCountryCode
             viewCountryInfo ninjas eligibilities countryCode
             playGame ninjas
         "b" -> do
             showNinjas . sortNinjas . concat $ ninjas
             playGame ninjas
+
         "c" -> do
             putStr "Enter the name of the first ninja: "
             fsNinja <- getLine
@@ -202,16 +204,30 @@ playGame ninjas = do
             secCountry <- getChar
             getLine
 
-            if ((toUpper fsCountry) == (toUpper secCountry))
+            let firstCountrySelected = selCountry (toUpper fsCountry) ninjas
+            let secondCountrySelected = selCountry (toUpper secCountry) ninjas 
+
+            if (toUpper fsCountry) == (toUpper secCountry)
                 then do
                     putStrLn "Please enter different countries."
                     playGame ninjas
-                else do
-                    let n1 = selNinja fsNinja (toUpper fsCountry) ninjas
-                    let n2 = selNinja secNinja (toUpper secCountry) ninjas
-                    let (winner, newNinjas) = roundNinja n1 n2 ninjas randNumber
-                    printWinner winner
-                    playGame newNinjas
+                else if not (checkEligibility firstCountrySelected)
+                    then do
+                        putStrLn "First country you entered is not eligible, please enter a different country."
+                        playGame ninjas
+                    else if not (checkEligibility secondCountrySelected) 
+                        then do
+                            putStrLn "Second country you entered is not eligible, please enter a different country."
+                            playGame ninjas
+                        else do
+
+                            print (checkEligibility firstCountrySelected)
+                            print (checkEligibility secondCountrySelected)
+                            let n1 = selNinja fsNinja (toUpper fsCountry) ninjas
+                            let n2 = selNinja secNinja (toUpper secCountry) ninjas
+                            let (winner, newNinjas) = roundNinja n1 n2 ninjas randNumber
+                            printWinner winner
+                            playGame newNinjas
 
         "d" -> do
             putStr "Enter the first country code: "
@@ -243,10 +259,22 @@ playGame ninjas = do
                                 then do
                                     putStrLn "Please enter different countries !"
                                     playGame ninjas
-                                else do
-                                    let (winner, newNinjas) = roundCountries (toUpper fsCountry) (toUpper secCountry) ninjas randNumber
-                                    printWinner winner
-                                    playGame newNinjas
+                                    else if (toUpper fsCountry) == (toUpper secCountry)
+                                        then do
+                                            putStrLn "Please enter different countries."
+                                            playGame ninjas
+                                        else if not (checkEligibility firstCountrySelected)
+                                            then do
+                                                putStrLn "First country you entered is not eligible, please enter a different country."
+                                                playGame ninjas
+                                            else if not (checkEligibility secondCountrySelected) 
+                                                then do
+                                                    putStrLn "Second country you entered is not eligible, please enter a different country."
+                                                    playGame ninjas
+                                                else do
+                                                    let (winner, newNinjas) = roundCountries (toUpper fsCountry) (toUpper secCountry) ninjas randNumber
+                                                    printWinner winner
+                                                    playGame newNinjas
 
 
         "e" -> do
