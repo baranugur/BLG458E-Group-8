@@ -2,7 +2,6 @@ import System.Environment
 import System.IO
 import System.Random
 import Data.Char
-import Data.List
 
 data Ninja = Ninja {name :: String, country :: Char,
                     status :: String, exam1 :: Float,
@@ -24,8 +23,15 @@ instance Ord Ninja
 showNinja :: Ninja -> String
 showNinja (Ninja name country status exam1 exam2 ability1 ability2 r score) = name ++ ", Score: " ++ show score ++ ", Status: " ++ status ++ ", Round: " ++ show r
 
+quicksort :: Ord a => [a] -> [a]
+quicksort [] = []
+quicksort (x:xs) = quicksort smaller ++ [x] ++ quicksort larger
+    where
+        smaller = [a | a <- xs, a <= x]
+        larger  = [b | b <- xs, b > x]
+
 sortNinjas :: [Ninja] -> [Ninja]
-sortNinjas ninjas = reverse $ sort ninjas
+sortNinjas ninjas = reverse $ quicksort ninjas
 
 showNinjas :: [Ninja] -> IO ()
 showNinjas []             = return ()
