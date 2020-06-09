@@ -199,17 +199,24 @@ playGame ninjas = do
             putStr "Enter the country code of the first ninja: "
             fsCountry <- getChar
             getLine
-
-            let n1 = selNinja fsNinja (toUpper fsCountry) ninjas
+            
             putStr "Enter the name of the second ninja: "
             secNinja <- getLine
             putStr "Enter the country code of the second ninja: "
             secCountry <- getChar
             getLine
-            let n2 = selNinja secNinja (toUpper secCountry) ninjas
-            let (winner, newNinjas) = roundNinja n1 n2 ninjas randNumber
-            printWinner winner
-            playGame newNinjas
+
+            if ((toUpper fsCountry) == (toUpper secCountry))
+                then do
+                    putStrLn "Please enter different countries."
+                    playGame ninjas
+                else do
+                    let n1 = selNinja fsNinja (toUpper fsCountry) ninjas
+                    let n2 = selNinja secNinja (toUpper secCountry) ninjas
+                    let (winner, newNinjas) = roundNinja n1 n2 ninjas randNumber
+                    printWinner winner
+                    playGame newNinjas
+
         "d" -> do
             putStr "Enter the first country code: "
             fsCountry <- getChar
