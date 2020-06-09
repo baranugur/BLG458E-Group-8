@@ -199,6 +199,7 @@ playGame ninjas = do
             putStr "Enter the country code of the first ninja: "
             fsCountry <- getChar
             getLine
+
             let n1 = selNinja fsNinja (toUpper fsCountry) ninjas
             putStr "Enter the name of the second ninja: "
             secNinja <- getLine
@@ -213,12 +214,32 @@ playGame ninjas = do
             putStr "Enter the first country code: "
             fsCountry <- getChar
             getLine
-            putStr "Enter the second country code: "
-            secCountry <- getChar
-            getLine
-            let (winner, newNinjas) = roundCountries (toUpper fsCountry) (toUpper secCountry) ninjas randNumber
-            printWinner winner
-            playGame newNinjas
+
+            -- Error handle country 1
+            let firstCountrySelected = selCountry (toUpper fsCountry) ninjas
+
+            case firstCountrySelected of
+                [] -> do
+                    putStrLn "The entered country is empty, please try again !"
+                    playGame ninjas
+                _ -> do
+                    putStr "Enter the second country code: "
+                    secCountry <- getChar
+                    getLine
+
+                    -- Error handle country 2
+                    let secondCountrySelected = selCountry (toUpper secCountry) ninjas
+
+                    case secondCountrySelected of
+                        [] -> do
+                            putStrLn "The entered country is empty, please try again !"
+                            playGame ninjas
+                        _ -> do
+                            let (winner, newNinjas) = roundCountries (toUpper fsCountry) (toUpper secCountry) ninjas randNumber
+                            printWinner winner
+                            playGame newNinjas
+                            
+
         "e" -> do
             printJourneyMan $ sortNinjas $ concat ninjas
             return ()
