@@ -2,7 +2,6 @@ import System.Environment
 import System.IO
 import System.Random
 import Data.Char
-import Data.List
 
 data Ninja = Ninja {name :: String, country :: Char,
                     status :: String, exam1 :: Float,
@@ -24,14 +23,30 @@ instance Ord Ninja
 showNinja :: Ninja -> String
 showNinja (Ninja name country status exam1 exam2 ability1 ability2 r score) = name ++ ", Score: " ++ show score ++ ", Status: " ++ status ++ ", Round: " ++ show r
 
+quicksort :: Ord a => [a] -> [a]
+quicksort [] = []
+quicksort (x:xs) = quicksort smaller ++ [x] ++ quicksort larger
+    where
+        smaller = [a | a <- xs, a <= x]
+        larger  = [b | b <- xs, b > x]
+
 sortNinjas :: [Ninja] -> [Ninja]
-sortNinjas ninjas = reverse $ sort ninjas
+sortNinjas ninjas = reverse $ quicksort ninjas
 
 showNinjas :: [Ninja] -> IO ()
 showNinjas []             = return ()
 showNinjas (ninja:ninjas) = do
     putStrLn $ showNinja ninja
     showNinjas ninjas
+
+printJourneyMan :: [Ninja] -> IO ()
+printJourneyMan [] = putStrLn "No journeyman found."
+printJourneyMan (ninja:ninjas) = do
+    if (status ninja) == "Journeyman"
+        then do
+            putStrLn $ showNinja ninja
+            printJourneyMan ninjas
+    else printJourneyMan ninjas
 
 -- For checking if the correct number of command line arguments are given.
 checkCommandLineArgs :: Int -> IO ()
@@ -205,6 +220,7 @@ playGame ninjas = do
             printWinner winner
             playGame newNinjas
         "e" -> do
+            printJourneyMan $ sortNinjas $ concat ninjas
             return ()
         _   -> do
             putStrLn "Please enter a correct action"
