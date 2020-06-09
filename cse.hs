@@ -253,14 +253,6 @@ roundCountries a b countries randNumber = do
     let n2 = firstCountryNinja b countries
     roundNinja n1 n2 countries randNumber
 
-firstCountryNinja :: Char -> [[Ninja]] -> Ninja
-firstCountryNinja a countries
-    | a=='F' = ((countries !! 0) !! 0)
-    | a=='L' = ((countries !! 1) !! 0)
-    | a=='W' = ((countries !! 2) !! 0)
-    | a=='N' = ((countries !! 3) !! 0)
-    | a=='E' = ((countries !! 4) !! 0)
-
 duel :: Ninja -> Ninja -> Int -> Int
 duel n1 n2 randNumber
     |score1 > score2 || (score1==score2 && abilities1 > abilities2) = 1
@@ -340,12 +332,18 @@ updateNRemove nUpd nRmv ninjas@(n:ns) = do
                 in toAdd : removeNinja nRmv ns
 
 selNinja :: String -> Char -> [[Ninja]] -> Ninja
-selNinja a ccode countries
-    | ccode=='F' = findNinja a (countries !! 0)
-    | ccode=='L' = findNinja a (countries !! 1)
-    | ccode=='W' = findNinja a (countries !! 2)
-    | ccode=='N' = findNinja a (countries !! 3)
-    | ccode=='E' = findNinja a (countries !! 4)
+selNinja a ccode countries = findNinja a (selCountry ccode countries)
+    
+firstCountryNinja :: Char -> [[Ninja]] -> Ninja
+firstCountryNinja ccode countries = head (selCountry ccode countries)
+    
+selCountry :: Char -> [[Ninja]] -> [Ninja]
+selCountry ccode countries
+    | ccode=='F' = (countries !! 0)
+    | ccode=='L' = (countries !! 1)
+    | ccode=='W' = (countries !! 2)
+    | ccode=='N' = (countries !! 3)
+    | ccode=='E' = (countries !! 4)
 
 findNinja :: String -> [Ninja] -> Ninja
 findNinja a [] = error "Ninja could not be found"
