@@ -191,7 +191,7 @@ playGame ninjas = do
             viewCountryInfo ninjas eligibilities countryCode
             playGame ninjas
         "b" -> do
-            showNinjas $ sortNinjas $ concat ninjas
+            showNinjas . sortNinjas . concat $ ninjas
             playGame ninjas
         "c" -> do
             putStr "Enter the name of the first ninja: "
@@ -333,10 +333,10 @@ updateNRemove nUpd nRmv ninjas@(n:ns) = do
 
 selNinja :: String -> Char -> [[Ninja]] -> Ninja
 selNinja a ccode countries = findNinja a (selCountry ccode countries)
-    
+
 firstCountryNinja :: Char -> [[Ninja]] -> Ninja
 firstCountryNinja ccode countries = head (selCountry ccode countries)
-    
+
 selCountry :: Char -> [[Ninja]] -> [Ninja]
 selCountry ccode countries
     | ccode=='F' = (countries !! 0)
