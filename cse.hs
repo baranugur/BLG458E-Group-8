@@ -296,7 +296,7 @@ updateCountries Nothing (Just nRmv) countries@(c:cs) = do
 updateCountries (Just nUpd) Nothing countries@(c:cs) = do
     if (country (c!!0)) == (country nUpd)
             then
-                (updateNinja nUpd c) : cs
+                (sortNinjas (updateNinja nUpd c)) : cs
             else
                 c : updateCountries (Just nUpd) Nothing cs
 updateCountries (Just nUpd) (Just nRmv) countries@(c:cs) = do
@@ -306,7 +306,7 @@ updateCountries (Just nUpd) (Just nRmv) countries@(c:cs) = do
             else c : (updateCountries (Just nUpd) (Just nRmv) cs)
         else if (country (c!!0)) == (country nUpd)
             then
-                (updateNinja nUpd c) : (updateCountries Nothing (Just nRmv) cs)
+                (sortNinjas (updateNinja nUpd c)) : (updateCountries Nothing (Just nRmv) cs)
             else if (country (c!!0)) == (country nRmv)
                 then
                     (removeNinja nRmv c) : (updateCountries (Just nUpd) Nothing cs)
