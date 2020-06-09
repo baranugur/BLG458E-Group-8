@@ -33,6 +33,15 @@ showNinjas (ninja:ninjas) = do
     putStrLn $ showNinja ninja
     showNinjas ninjas
 
+printJourneyMan :: [Ninja] -> IO ()
+printJourneyMan [] = putStrLn "No journeyman found."
+printJourneyMan (ninja:ninjas) = do
+    if (status ninja) == "Journeyman"
+        then do
+            putStrLn $ showNinja ninja
+            printJourneyMan ninjas
+    else printJourneyMan ninjas
+
 -- For checking if the correct number of command line arguments are given.
 checkCommandLineArgs :: Int -> IO ()
 checkCommandLineArgs 1 = return ()
@@ -205,6 +214,7 @@ playGame ninjas = do
             printWinner winner
             playGame newNinjas
         "e" -> do
+            printJourneyMan $ sortNinjas $ concat ninjas
             return ()
         _   -> do
             putStrLn "Please enter a correct action"
