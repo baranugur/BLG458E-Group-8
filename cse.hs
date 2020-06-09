@@ -127,11 +127,7 @@ checkEligibility :: [Ninja] -> Bool
 checkEligibility = all (\ninja -> status ninja == "Junior")
 
 checkEligibilitiesOfCountries :: [[Ninja]] -> [Bool]
-checkEligibilitiesOfCountries [fire, lightning, water, wind, earth] = [checkEligibility fire,
-                                                                     checkEligibility lightning,
-                                                                     checkEligibility water,
-                                                                     checkEligibility wind,
-                                                                     checkEligibility earth]
+checkEligibilitiesOfCountries = map checkEligibility
 
 viewCountryInfoVerbose :: [Ninja] -> Bool -> String -> IO ()
 viewCountryInfoVerbose country isCountryEligible countryName = do
@@ -199,7 +195,7 @@ playGame ninjas = do
             putStr "Enter the country code of the first ninja: "
             fsCountry <- getChar
             getLine
-            
+
             putStr "Enter the name of the second ninja: "
             secNinja <- getLine
             putStr "Enter the country code of the second ninja: "
