@@ -31,7 +31,7 @@ quicksort (x:xs) = quicksort smaller ++ [x] ++ quicksort larger
         larger  = [b | b <- xs, b > x]
 
 sortNinjas :: [Ninja] -> [Ninja]
-sortNinjas ninjas = reverse $ quicksort ninjas
+sortNinjas = reverse . quicksort
 
 showNinjas :: [Ninja] -> IO ()
 showNinjas []             = return ()
@@ -124,7 +124,7 @@ separate :: [Ninja] -> [[Ninja]]
 separate ninjas = [getFire ninjas, getLightning ninjas, getWater ninjas, getWind ninjas, getEarth ninjas]
 
 checkEligibility :: [Ninja] -> Bool
-checkEligibility country = all (\ninja -> status ninja == "Junior") country
+checkEligibility = all (\ninja -> status ninja == "Junior")
 
 checkEligibilitiesOfCountries :: [[Ninja]] -> [Bool]
 checkEligibilitiesOfCountries [fire, lightning, water, wind, earth] = [checkEligibility fire,
@@ -251,7 +251,7 @@ playGame ninjas = do
                                     let (winner, newNinjas) = roundCountries (toUpper fsCountry) (toUpper secCountry) ninjas randNumber
                                     printWinner winner
                                     playGame newNinjas
-                            
+
 
         "e" -> do
             printJourneyMan $ sortNinjas $ concat ninjas
